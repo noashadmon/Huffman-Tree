@@ -1,0 +1,83 @@
+//  Author: Sean Davis
+
+#include <cstdlib>
+#include <ostream>
+#include <iostream>
+#include "encoder.h"
+#include "BinaryHeap.h"
+
+using namespace std;
+
+Encoder::Encoder()
+{
+} // Encoder()
+
+
+Encoder::~Encoder()
+{
+} // ~Encoder()
+
+void Encoder::encode(const unsigned char *message, const int size, 
+  unsigned char *encodedMessage, 
+    int *encodedSize)
+{
+   int check[256] = {0};
+  int ch;
+  BinaryHeap<node> huff(256);
+  int codeTable[256];
+
+  cout <<"size :" << size<<endl;
+  for(int i = 0; i < size; i++)
+      {
+       ch  = (int)message[i];
+       check[ch]++;
+      }//calc frequency
+  
+   for(int i = 0; i < 256; i++)
+     {
+         node *n = new node(i, check[i], NULL, NULL);
+
+         if(check[i] != 0)
+
+         huff.insert(n);
+
+     }//inserts into heap
+
+     while(huff.currentSize > 1)
+     {
+           node min1 = huff.findMin();
+           //cout << "min" << min1.item<<endl;
+           huff.deleteMin();
+
+           node min2 = huff.findMin();
+           huff.deleteMin();
+
+           int Nfreq = min1.freq + min2.freq;
+           node *t = new node('$', Nfreq, &min1, &min2);
+           cout << "freq: " << t->freq << " item " << t->item<<endl;
+           cout << " left " << (t->left)->freq<< " item " << (t->left)->item<<endl;
+           cout << " right " << (t->right)->freq<< " item " << (t->right)->item<<endl;
+           huff.insert(t);
+     
+     }
+     cout << "min_val " << (huff.findMin()).freq<<endl;
+     
+     const node *Root = &(huff.findMin());
+     const node *g = Root->right;
+     cout << "min_val_left " << g->right->freq<< "item" << g->right->item<<endl;
+     PrintTree(Root);
+}  // encode()
+
+void Encoder::PrintTree(const node* x)
+{
+   //if(x == NULL)
+        // return;
+          
+           cout << "freq:" << x->freq << "item" << x->item <<endl;
+           if(x->left)
+           PrintTree(x->left);
+           if(x->right) 
+           PrintTree(x->right);
+           else
+             return;
+}
